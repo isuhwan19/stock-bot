@@ -1,0 +1,18 @@
+name: Stock Bot
+
+on:
+  schedule:
+    - cron: '30 23 * * *'  # 한국 08:30
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python 실행
+        run: |
+          pip install requests
+          python main.py 
