@@ -23,5 +23,5 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
-          pip install requests
+          pip install requests yfinance  # <--- yfinance를 추가했습니다!
           python main.py
