@@ -2,17 +2,26 @@ name: Stock Bot
 
 on:
   schedule:
-    - cron: '30 23 * * *'  # 한국 08:30
-  workflow_dispatch:
+    - cron: '30 23 * * *' # 한국 시간 오전 08:30
+  workflow_dispatch: # 수동 실행 버튼
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: 코드 가져오기
+        uses: actions/checkout@v3
 
-      - name: Python 실행
+      - name: 파이썬 설정
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: 라이브러리 설치 및 실행
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
           pip install requests
           python main.py
