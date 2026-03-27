@@ -1,5 +1,6 @@
 import requests
 import os
+import yfinance as yf
 from datetime import datetime
 
 # GitHub Secrets에서 값을 가져옵니다.
@@ -7,27 +8,22 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
 def get_market_data():
-    # 야후 파이낸스 API 주소
-    url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC,%5EIXIC"
+    # yfinance를 사용하여 데이터를 가져옵니다 (차단 우회)
+    tickers = yf.Tickers('^GSPC ^IXIC')
     
-    # [중요] 브라우저처럼 보이기 위한 헤더 추가 (이게 없어서 에러가 났던 거예요!)
-    headers = {"User-Agent": "Mozilla/5.0"}
+    # S&P 500 데이터
+    sp500_data = tickers.tickers['^GSPC'].history(period="2d")
+    sp500_change = ((sp500_data['Close'].iloc[-1] - sp500_data['Close'].iloc[-2]) / sp500_data['Close'].iloc[-2]) * 100
     
-    res = requests.get(url, headers=headers).json()
+    # 나스닥 데이터
+    nasdaq_data = tickers.tickers['^IXIC'].history(period="2d")
+    nasdaq_change = ((nasdaq_data['Close'].iloc[-1] - nasdaq_data['Close'].iloc[-2]) / nasdaq_data['Close'].iloc[-2]) * 100
     
-    # 데이터가 잘 왔는지 확인
-    if 'quoteResponse' not in res or not res['quoteResponse']['result']:
-        raise Exception(f"데이터를 가져오지 못했습니다: {res}")
-
-    sp500 = res['quoteResponse']['result'][0]['regularMarketChangePercent']
-    nasdaq = res['quoteResponse']['result'][1]['regularMarketChangePercent']
-    
-    return sp500, nasdaq
+    return sp500_change, nasdaq_change
 
 def make_message():
     sp500, nasdaq = get_market_data()
     
-    # 메시지 이모지 설정
     s_icon = "🔥" if sp500 > 0 else "📉"
     n_icon = "🔥" if nasdaq > 0 else "📉"
     
