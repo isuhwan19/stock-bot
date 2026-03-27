@@ -7,7 +7,8 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 def get_market_data():
     url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=%5EGSPC,%5EIXIC"
-    res = requests.get(url).json()
+    headers = {"User-Agent": "Mozilla/5.0"}
+    res = requests.get(url, headers=headers).json()
 
     sp500 = res['quoteResponse']['result'][0]['regularMarketChangePercent']
     nasdaq = res['quoteResponse']['result'][1]['regularMarketChangePercent']
