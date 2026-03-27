@@ -1,53 +1,37 @@
-import requests
 import os
-import yfinance as yf
+import requests
 from datetime import datetime
 
-# GitHub Secrets에서 값을 가져옵니다.
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
 
-def get_market_data():
-    # yfinance를 사용하여 데이터를 가져옵니다 (차단 우회)
-    tickers = yf.Tickers('^GSPC ^IXIC')
-    
-    # S&P 500 데이터
-    sp500_data = tickers.tickers['^GSPC'].history(period="2d")
-    sp500_change = ((sp500_data['Close'].iloc[-1] - sp500_data['Close'].iloc[-2]) / sp500_data['Close'].iloc[-2]) * 100
-    
-    # 나스닥 데이터
-    nasdaq_data = tickers.tickers['^IXIC'].history(period="2d")
-    nasdaq_change = ((nasdaq_data['Close'].iloc[-1] - nasdaq_data['Close'].iloc[-2]) / nasdaq_data['Close'].iloc[-2]) * 100
-    
-    return sp500_change, nasdaq_change
+# 메시지 (일단 수동 분석 느낌으로 자동 생성)
+today = datetime.now().strftime("%m/%d")
 
-def make_message():
-    sp500, nasdaq = get_market_data()
-    
-    s_icon = "🔥" if sp500 > 0 else "📉"
-    n_icon = "🔥" if nasdaq > 0 else "📉"
-    
-    msg = f"""
-📊 **미국 증시 요약 ({datetime.now().strftime('%m-%d')})**
+message = f"""
+📊 {today} 미국 증시 요약
 
-S&P500: {sp500:.2f}% {s_icon}
-나스닥: {nasdaq:.2f}% {n_icon}
+[미국 증시]
+- S&P500: 혼조세
+- 나스닥: 기술주 변동성 확대
+- 주요 이유: 금리, AI 관련 기대감 혼재
 
-[핵심 해석]
-{"🚀 기술주 강세! 반도체/2차전지 주목" if nasdaq >= 1 else "⚠️ 기술주 약세, 보수적 대응 필요"}
+[핵심 이슈]
+1. (최중요) 금리 방향성 불확실성
+2. (중요) AI 관련 빅테크 흐름
+3. (참고) 반도체 수급 뉴스
+
+[오늘 국장 전략]
+- 유리한 섹터: 반도체, AI, 2차전지
+- 피해야 할 구간: 갭상승 추격매수
+- 매매 포인트: 눌림목 + 거래량 동반
 """
-    return msg
 
-def send_telegram(msg):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"}
-    res = requests.post(url, data=payload)
-    return res.json()
+url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
-if __name__ == "__main__":
-    try:
-        message = make_message()
-        send_telegram(message)
-        print("메시지 전송 완료!")
-    except Exception as e:
-        print(f"에러 발생: {e}")
+data = {
+    "chat_id": CHAT_ID,
+    "text": message
+}
+
+requests.post(url, data=data)
