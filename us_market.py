@@ -121,7 +121,8 @@ def send_pro_report():
     requests.post(url, data={"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"})
 
 def run():
-    send_pro_report()
-    print("전략 리포트 전송 완료!")
+    try:
+        send_pro_report()
+        print("전략 리포트 전송 완료!")
     except Exception as e:
         print(f"에러 발생: {e}")
