@@ -118,7 +118,11 @@ def send_pro_report():
 {strategy}
 """
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    requests.post(url, data={"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"})
+
+    res = requests.post(url, data={
+    "chat_id": CHAT_ID,
+    "text": msg
+})
 
 def run():
     try:
