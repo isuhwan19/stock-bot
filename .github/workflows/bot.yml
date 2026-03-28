@@ -2,11 +2,9 @@ name: Stock Bot
 
 on:
   schedule:
-    # 1. 한국 시간 08:00 (UTC 23:00)
-    # 2. 한국 시간 15:10 (UTC 06:10)
-    - cron: '0 23 * * *'
-    - cron: '10 6 * * 1-5' 
-  workflow_dispatch: # 수동 실행 버튼
+    - cron: '0 23 * * *'      # 한국 시간 오전 08:00 (월~일)
+    - cron: '10 6 * * 1-5'    # 한국 시간 오후 15:10 (월~금)
+  workflow_dispatch:          # 수동 실행 버튼
 
 jobs:
   run-bot:
@@ -26,5 +24,6 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: |
-          pip install requests yfinance  # <--- yfinance를 추가했습니다!
+          # 필요한 라이브러리 3개를 한꺼번에 설치합니다.
+          pip install requests yfinance beautifulsoup4
           python main.py
