@@ -1,14 +1,22 @@
-def run():
-    now = datetime.now().strftime("%H:%M")
-    stocks = get_closing_candidates()
-    
-    # 💡 테스트를 위해 데이터가 없어도 가짜 데이터를 넣어서 보내보기
-    if not stocks:
-        print("주말이라 데이터가 없네요! 테스트 데이터를 생성합니다.")
-        stocks = [
-            {"name": "주말테스트A", "price": "10,000", "change": 15.5, "volume": "1,200,000"},
-            {"name": "주말테스트B", "price": "5,500", "change": 8.2, "volume": "800,000"}
-        ]
+import requests
+import os
+from bs4 import BeautifulSoup
+from datetime import datetime
 
-    msg = f"🎯 *[{now}] 종가매매/스윙 후보군*\n"
-    # ... 이하 동일
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+CHAT_ID = os.environ.get("CHAT_ID")
+
+def send(msg):
+    print(f"메시지 전송 시도... (ID: {CHAT_ID})")
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    res = requests.post(url, data={"chat_id": CHAT_ID, "text": msg, "parse_mode": "Markdown"})
+    print(f"결과: {res.status_code}, {res.text}")
+
+def run():
+    print("surge_stock.run() 시작")
+    # 무조건 테스트용 데이터를 만들어서 보냅니다.
+    msg = "🚀 봇 연결 테스트 성공! 주말에도 잘 작동합니다."
+    send(msg)
+
+if __name__ == "__main__":
+    run()
