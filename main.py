@@ -7,11 +7,20 @@ def main():
     KST = timezone(timedelta(hours=9))
     now = datetime.datetime.now(KST)
     
-    # 시간을 따지지 않고 두 개 다 강제로 실행해보기
-    print("테스트 모드: 모든 기능을 실행합니다.")
-    us_market.run()
-    surge_stock.run()
+    print(f"현재 한국 시간: {now.strftime('%Y-%m-%d %H:%M:%S')}")
 
-# 👇 파이썬에게 "이 파일이 열리면 main() 함수를 실행해!"라고 명령하는 핵심 코드입니다.
+    # 👉 [오전 8시] 미국 증시 리포트
+    if now.hour == 8:
+        print("미국 증시 리포트를 실행합니다.")
+        us_market.run()
+
+    # 👉 [오후 3시(15시)] 종가매매 후보군 알림
+    elif now.hour == 15:
+        print("종가매매 감지를 실행합니다.")
+        surge_stock.run()
+        
+    else:
+        print(f"현재 시간({now.hour}시)은 알림 예약 시간이 아닙니다.")
+
 if __name__ == "__main__":
     main()
