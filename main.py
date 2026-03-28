@@ -2,16 +2,16 @@ import requests
 import os
 import yfinance as yf
 from datetime import datetime
+import xml.etree.ElementTree as ET
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
 def get_fear_and_greed():
     try:
-        # CNN 공포탐욕지수 API 호출
         url = "https://production.dataviz.cnn.io/index/fearandgreed/graphdata"
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
         res = requests.get(url, headers=headers)
         data = res.json()
@@ -19,7 +19,6 @@ def get_fear_and_greed():
         score = int(data['fear_and_greed']['score'])
         rating_raw = data['fear_and_greed']['rating'].lower()
         
-        # 상태에 따라 한글과 이모지 매칭
         if "extreme fear" in rating_raw:
             rating_kr = "극도의 공포 🥶"
         elif "fear" in rating_raw:
@@ -37,27 +36,29 @@ def get_fear_and_greed():
 
 def get_top_news():
     try:
-        # S&P500 ETF(SPY) 관련 최신 글로벌 뉴스 가져오기
-        spy = yf.Ticker("SPY")
-        news_data = spy.news
-        headlines = ""
+        # 구글 뉴스에서 '미국 증시' 검색 결과를 한국어로 가져옵니다 (절대 막히지 않는 안정적인 방식!)
+        url = "https://news.google.com/rss/search?q=미국+증시&hl=ko&gl=KR&ceid=KR:ko"
+        res = requests.get(url)
+        root = ET.fromstring(res.text)
         
+        headlines = ""
         # 상위 3개 뉴스만 추출
-        for i, news in enumerate(news_data[:3]):
-            # 텔레그램 마크다운 오류 방지를 위해 특수문자 제거
-            title = news['title'].replace('[', '(').replace(']', ')').replace('*', '').replace('_', '')
+        for i, item in enumerate(root.findall('.//item')[:3]):
+            title = item.find('title').text
+            # 텔레그램 에러 방지를 위한 특수문자 제거
+            title = title.replace('[', '(').replace(']', ')').replace('*', '').replace('_', '')
             headlines += f"{i+1}. {title}\n"
             
         return headlines if headlines else "최신 뉴스가 없습니다."
     except Exception as e:
-        return "뉴스를 불러오지 못했습니다."
+        return f"뉴스를 불러오지 못했습니다. ({e})"
 
 def get_market_analysis():
     symbols = {
         "S&P500": "^GSPC",
         "Nasdaq": "^IXIC",
         "VIX(공포지수)": "^VIX",
-        "US10Y": "^TNX",
+        "US10Y(금리)": "^TNX",
         "USD/KRW": "KRW=X"
     }
     
@@ -108,7 +109,7 @@ def send_pro_report():
 - Fear & Greed: {fg_index}
 
 **[매크로 환경]**
-- 미 10년물 금리: {data['US10Y']['val']:.2f}%
+- 미 10년물 금리: {data['US10Y(금리)']['val']:.2f}%
 - 원/달러 환율: {data['USD/KRW']['val']:.1f}원 ({data['USD/KRW']['chg']:+.2f}%)
 
 **[🔥 간밤의 핵심 뉴스 Top 3]**
