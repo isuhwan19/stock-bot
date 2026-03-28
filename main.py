@@ -4,26 +4,25 @@ import us_market
 import surge_stock
 
 def main():
-    # 1. 한국 시간(KST) 세팅: UTC 시간보다 9시간 빠름
+    # 1. 한국 시간(KST) 세팅 (UTC+9)
     KST = timezone(timedelta(hours=9))
     now = datetime.datetime.now(KST)
     
-    # Actions 로그에서 확인하기 좋게 현재 시간 출력
     print(f"현재 한국 시간: {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"현재 시간(시): {now.hour}")
 
-    # 👉 아침 (미국 증시 리포트)
+    # 👉 [오전 8시] 미국 증시 마감 리포트 & 국장 대응 전략
     if now.hour == 8:
-        print("미국 증시 리포트를 실행합니다.")
-        us_market.run()  # ⚠️ 주의: us_market.py 안의 함수 이름이 run()이어야 합니다!
+        print("미국 증시 리포트를 전송합니다.")
+        us_market.run()
 
-    # 👉 장중 (급등주 감지)
-    elif 9 <= now.hour <= 15:
-        print("급등주 감지를 실행합니다.")
+    # 👉 [오후 3시(15시)] 종가매매 및 스윙 종목 후보군 추출
+    elif now.hour == 15:
+        print("종가매매 후보 종목을 분석합니다.")
         surge_stock.run()
         
+    # 👉 [그 외 시간] 로그만 남기고 종료
     else:
-        print("지금은 알림을 보낼 시간이 아닙니다.")
+        print(f"현재 시간 {now.hour}시는 알림 예약 시간이 아닙니다.")
 
 if __name__ == "__main__":
     main()
