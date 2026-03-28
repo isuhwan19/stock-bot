@@ -1,7 +1,7 @@
 import requests
 import os
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import xml.etree.ElementTree as ET
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
@@ -36,16 +36,13 @@ def get_fear_and_greed():
 
 def get_top_news():
     try:
-        # 구글 뉴스에서 '미국 증시' 검색 결과를 한국어로 가져옵니다 (절대 막히지 않는 안정적인 방식!)
         url = "https://news.google.com/rss/search?q=미국+증시&hl=ko&gl=KR&ceid=KR:ko"
         res = requests.get(url)
         root = ET.fromstring(res.text)
         
         headlines = ""
-        # 상위 3개 뉴스만 추출
         for i, item in enumerate(root.findall('.//item')[:3]):
             title = item.find('title').text
-            # 텔레그램 에러 방지를 위한 특수문자 제거
             title = title.replace('[', '(').replace(']', ')').replace('*', '').replace('_', '')
             headlines += f"{i+1}. {title}\n"
             
@@ -97,7 +94,9 @@ def send_pro_report():
     fg_index = get_fear_and_greed()
     news_text = get_top_news()
     
-    today = datetime.now().strftime("%m/%d")
+    # 한국 시간 기준으로 날짜 설정
+    KST = timezone(timedelta(hours=9))
+    today = datetime.now(KST).strftime("%m/%d")
     
     msg = f"""
 📅 **{today} 미 증시 마감 & 국장 전략**
@@ -118,15 +117,17 @@ def send_pro_report():
 {strategy}
 """
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-
-    res = requests.post(url, data={
-    "chat_id": CHAT_ID,
-    "text": msg
-})
+    
+    # parse_mode="Markdown"을 추가하여 글자를 굵게 만듭니다.
+    requests.post(url, data={
+        "chat_id": CHAT_ID, 
+        "text": msg,
+        "parse_mode": "Markdown"
+    })
 
 def run():
     try:
         send_pro_report()
-        print("전략 리포트 전송 완료!")
+        print("미국 증시 리포트 전송 완료!")
     except Exception as e:
-        print(f"에러 발생: {e}")
+        print(f"us_market 실행 중 에러 발생: {e}")
