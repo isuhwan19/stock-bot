@@ -124,4 +124,4 @@ def run():
     send_pro_report()
     print("전략 리포트 전송 완료!")
     except Exception as e:
-    print(f"에러 발생: {e}")
+        print(f"에러 발생: {e}")
